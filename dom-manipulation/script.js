@@ -170,7 +170,7 @@ function createAddQuoteForm() {
     console.log("Add Quote Form elements are ready.");
 }
 
-function _simulateServerFetch() {
+async function fetchQuotesFromServer() {
     return new Promise(resolve => {
         setTimeout(() => {
             resolve(JSON.parse(JSON.stringify(_serverData)));
@@ -195,7 +195,7 @@ function _simulateServerPost(newQuote) {
 async function syncQuotesWithServer() {
     syncStatusElement.textContent = 'Syncing...';
     try {
-        const serverQuotes = await _simulateServerFetch();
+        const serverQuotes = await fetchQuotesFromServer();
         const localQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
 
         let mergedQuotes = JSON.parse(JSON.stringify(serverQuotes));
