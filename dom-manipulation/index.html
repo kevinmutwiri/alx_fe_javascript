@@ -107,6 +107,23 @@
         #addQuoteButton:hover {
             background-color: #218838;
         }
+
+        .storage-section {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .storage-section button,
+        .storage-section input[type="file"] {
+            margin-top: 10px;
+        }
+
+        #lastViewedQuoteDisplay {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 15px;
+        }
     </style>
 </head>
 
@@ -118,6 +135,11 @@
         <div id="quoteDisplay">
             <p id="quoteText">"The only way to do great work is to love what you do."</p>
             <p id="quoteCategory">- Steve Jobs (Motivation)</p>
+        </div>
+
+        <!-- Session Storage Display -->
+        <div id="lastViewedQuoteDisplay">
+            Last Viewed: None
         </div>
 
         <!-- Controls for displaying quotes -->
@@ -145,6 +167,16 @@
                 <button onclick="addQuote()" id="addQuoteButton">
                     Add Quote
                 </button>
+            </div>
+        </div>
+
+        <!-- Storage and Import/Export Section -->
+        <div class="storage-section">
+            <h2>Data Management</h2>
+            <div>
+                <button onclick="exportQuotes()">Export Quotes (JSON)</button>
+                <label for="importFile" style="display: block; margin-top: 10px;">Import Quotes (JSON):</label>
+                <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
             </div>
         </div>
     </div>
