@@ -171,16 +171,30 @@ function createAddQuoteForm() {
 }
 
 async function fetchQuotesFromServer() {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            resolve(JSON.parse(JSON.stringify(_serverData)));
-        }, SERVER_LATENCY_MS);
-    });
+    try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        // Map JSONPlaceholder posts to our quote format
+        return data.map(post => ({
+            text: post.title,
+            category: `API - ${post.id % 5 === 0 ? 'Motivation' : 'Inspiration'}`, // Simple category assignment
+            author: `API User ${post.userId}`
+        }));
+    } catch (error) {
+        console.error("Error fetching from JSONPlaceholder:", error);
+        // Fallback to local _serverData if API fetch fails
+        return JSON.parse(JSON.stringify(_serverData));
+    }
 }
 
-function _simulateServerPost(newQuote) {
+async function _simulateServerPost(newQuote) {
     return new Promise(resolve => {
         setTimeout(() => {
+            // Simulate posting to a server. JSONPlaceholder /posts will just return the data, not persist it.
+            // So, we update our internal _serverData to simulate our server having received it.
             const existingIndex = _serverData.findIndex(q => q.text === newQuote.text && q.category === newQuote.category);
             if (existingIndex === -1) {
                 _serverData.push(newQuote);
