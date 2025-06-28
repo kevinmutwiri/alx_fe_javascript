@@ -1,66 +1,72 @@
 let quotes = [
-    { text: "The only way to do great work is to love what you do.", category: "Inspiration" },
-    { text: "Innovation distinguishes between a leader and a follower.", category: "Business" },
-    { text: "Strive not to be a success, but rather to be of value.", category: "Life" },
-    { text: "The future belongs to those who believe in the beauty of their dreams.", category: "Inspiration" },
-    { text: "The mind is everything. What you think you become.", category: "Philosophy" }
+    { text: "The only way to do great work is to love what you do.", category: "Motivation", author: "Steve Jobs" },
+    { text: "Believe you can and you're halfway there.", category: "Motivation", author: "Theodore Roosevelt" },
+    { text: "The future belongs to those who believe in the beauty of their dreams.", category: "Inspiration", author: "Eleanor Roosevelt" },
+    { text: "It is during our darkest moments that we must focus to see the light.", category: "Inspiration", author: "Aristotle" },
+    { text: "The best way to predict the future is to create it.", category: "Innovation", author: "Peter Drucker" },
+    { text: "Innovation distinguishes between a leader and a follower.", category: "Innovation", author: "Steve Jobs" },
+    { text: "Life is what happens when you're busy making other plans.", category: "Life", author: "John Lennon" },
+    { text: "Get busy living or get busy dying.", category: "Life", author: "Stephen King" }
 ];
 
-const quoteText = document.getElementById('quoteText');
-const quoteCategory = document.getElementById('quoteCategory');
-const newQuoteBtn = document.getElementById('newQuote');
-const addQuoteFormDiv = document.getElementById('addQuoteForm');
-const showAddQuoteFormBtn = document.getElementById('showAddQuoteFormBtn');
+const quoteTextElement = document.getElementById('quoteText');
+const quoteCategoryElement = document.getElementById('quoteCategory');
+const newQuoteButton = document.getElementById('newQuote');
 const newQuoteTextInput = document.getElementById('newQuoteText');
 const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
+const categoryFilterSelect = document.getElementById('categoryFilter');
+
+function populateCategoryFilter() {
+    const categories = [...new Set(quotes.map(quote => quote.category.trim().toLowerCase()))];
+    categoryFilterSelect.innerHTML = '<option value="all">All Categories</option>';
+    categories.sort().forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        categoryFilterSelect.appendChild(option);
+    });
+}
 
 function showRandomQuote() {
-    if (quotes.length === 0) {
-        quoteText.textContent = "No quotes available.";
-        quoteCategory.textContent = "";
+    const selectedCategory = categoryFilterSelect.value;
+    let filteredQuotes = quotes;
+
+    if (selectedCategory !== 'all') {
+        filteredQuotes = quotes.filter(quote => quote.category.trim().toLowerCase() === selectedCategory);
+    }
+
+    if (filteredQuotes.length === 0) {
+        quoteTextElement.textContent = "No quotes available for this category.";
+        quoteCategoryElement.textContent = "";
         return;
     }
-    const randomIndex = Math.floor(Math.random() * quotes.length);
-    const randomQuote = quotes[randomIndex];
-    quoteText.textContent = `"${randomQuote.text}"`;
-    quoteCategory.textContent = `Category: ${randomQuote.category}`;
+
+    const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+    const randomQuote = filteredQuotes[randomIndex];
+
+    quoteTextElement.textContent = `"${randomQuote.text}"`;
+    quoteCategoryElement.textContent = `- ${randomQuote.author ? randomQuote.author : 'Unknown'} (${randomQuote.category})`;
 }
 
 function addQuote() {
-    const text = newQuoteTextInput.value.trim();
-    const category = newQuoteCategoryInput.value.trim();
+    const newText = newQuoteTextInput.value.trim();
+    const newCategory = newQuoteCategoryInput.value.trim();
 
-    if (text && category) {
-        quotes.push({ text, category });
+    if (newText && newCategory) {
+        quotes.push({ text: newText, category: newCategory, author: "User" });
         newQuoteTextInput.value = '';
         newQuoteCategoryInput.value = '';
+        populateCategoryFilter();
         showRandomQuote();
-        addQuoteFormDiv.classList.add('hidden');
     } else {
         alert('Please enter both quote text and category.');
     }
 }
 
-function createAddQuoteForm() {
-    addQuoteFormDiv.classList.remove('hidden');
-    newQuoteTextInput.value = '';
-    newQuoteCategoryInput.value = '';
-    newQuoteTextInput.focus();
-}
-
-newQuoteBtn.addEventListener('click', () => {
-    showRandomQuote();
-});
-
-showAddQuoteFormBtn.addEventListener('click', () => {
-    if (addQuoteFormDiv.classList.contains('hidden')) {
-        createAddQuoteForm();
-    } else {
-        addQuoteFormDiv.classList.add('hidden');
-    }
-});
+newQuoteButton.addEventListener('click', showRandomQuote);
+categoryFilterSelect.addEventListener('change', showRandomQuote);
 
 document.addEventListener('DOMContentLoaded', () => {
+    populateCategoryFilter();
     showRandomQuote();
-    addQuoteFormDiv.classList.add('hidden');
 });
