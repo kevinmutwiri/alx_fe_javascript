@@ -64,8 +64,11 @@ function populateCategories() {
 
 function filterQuotes() {
     const selectedCategory = categoryFilterSelect.value;
-    localStorage.setItem('lastSelectedCategory', selectedCategory); // Save the selected category
+    localStorage.setItem('lastSelectedCategory', selectedCategory);
     let filteredQuotes = quotes;
+
+    // Explicitly reference the quoteDisplay element here
+    const quoteDisplayElement = document.getElementById('quoteDisplay');
 
     if (selectedCategory !== 'all') {
         filteredQuotes = quotes.filter(quote => quote.category.trim().toLowerCase() === selectedCategory);
@@ -75,6 +78,7 @@ function filterQuotes() {
         quoteTextElement.textContent = "No quotes available for this category.";
         quoteCategoryElement.textContent = "";
         saveLastViewedQuote(null);
+        // You could optionally hide or style quoteDisplayElement here if needed
         return;
     }
 
@@ -95,8 +99,8 @@ function addQuote() {
         newQuoteTextInput.value = '';
         newQuoteCategoryInput.value = '';
         saveQuotes();
-        populateCategories(); // Update categories in filter
-        filterQuotes(); // Display a new random quote, potentially including the newly added one
+        populateCategories();
+        filterQuotes();
     } else {
         alert('Please enter both quote text and category.');
     }
@@ -144,16 +148,16 @@ function initializeQuoteGenerator() {
     loadQuotes();
     loadLastViewedQuote();
 
-    populateCategories(); // Populate categories on load
+    populateCategories();
 
     const lastSelectedCategory = localStorage.getItem('lastSelectedCategory');
     if (lastSelectedCategory) {
         categoryFilterSelect.value = lastSelectedCategory;
     }
 
-    filterQuotes(); // Display an initial random quote based on filter
+    filterQuotes();
 
-    newQuoteButton.addEventListener('click', filterQuotes); // Changed to filterQuotes
+    newQuoteButton.addEventListener('click', filterQuotes);
     categoryFilterSelect.addEventListener('change', filterQuotes);
 }
 
