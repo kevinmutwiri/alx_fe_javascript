@@ -12,13 +12,18 @@ let quotes = [
 const quoteDisplay = document.getElementById('quoteDisplay');
 const newQuoteBtn = document.getElementById('newQuote');
 
-const addQuoteFormDiv = document.getElementById('addQuoteForm');
-const showAddQuoteFormBtn = document.getElementById('showAddQuoteFormBtn');
-const newQuoteTextInput = document.getElementById('newQuoteText');
-const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
-
+let addQuoteFormDiv;
+let showAddQuoteFormBtn;
+let newQuoteTextInput;
+let newQuoteCategoryInput;
+let addQuoteSubmitBtn;
 
 function showRandomQuote() {
+    if (!quoteDisplay) {
+        console.error("Error: 'quoteDisplay' element not found in the HTML. Cannot display quotes.");
+        return;
+    }
+
     const randomIndex = Math.floor(Math.random() * quotes.length);
     const randomQuote = quotes[randomIndex];
 
@@ -40,8 +45,12 @@ function showRandomQuote() {
     quoteDisplay.appendChild(quoteCategoryElement);
 }
 
-
 function addQuote() {
+    if (!newQuoteTextInput || !newQuoteCategoryInput) {
+        console.error("Error: Input fields for adding quotes are missing. Cannot add quote.");
+        return;
+    }
+
     const text = newQuoteTextInput.value.trim();
     const category = newQuoteCategoryInput.value.trim().toLowerCase();
 
@@ -49,7 +58,13 @@ function addQuote() {
         quotes.push({ text, category });
         newQuoteTextInput.value = '';
         newQuoteCategoryInput.value = '';
-        addQuoteFormDiv.classList.add('hidden');
+
+        if (addQuoteFormDiv) {
+            addQuoteFormDiv.style.display = 'none';
+        } else {
+            console.warn("Warning: 'addQuoteFormDiv' not found. Cannot hide the form dynamically.");
+        }
+
         showRandomQuote();
         console.log("Quote added:", { text, category });
     } else {
@@ -57,18 +72,113 @@ function addQuote() {
     }
 }
 
-
 function toggleAddQuoteForm() {
-    addQuoteFormDiv.classList.toggle('hidden');
+    if (!addQuoteFormDiv) {
+        console.warn("Warning: 'addQuoteFormDiv' not found. Cannot toggle form visibility.");
+        return;
+    }
+    if (addQuoteFormDiv.style.display === 'none' || addQuoteFormDiv.style.display === '') {
+        addQuoteFormDiv.style.display = 'block';
+    } else {
+        addQuoteFormDiv.style.display = 'none';
+    }
 }
 
+function setupAddQuoteForm() {
+    showAddQuoteFormBtn = document.getElementById('showAddQuoteFormBtn');
+    addQuoteFormDiv = document.getElementById('addQuoteForm');
+    newQuoteTextInput = document.getElementById('newQuoteText');
+    newQuoteCategoryInput = document.getElementById('newQuoteCategory');
+    addQuoteSubmitBtn = document.querySelector('#addQuoteForm button') || document.getElementById('addQuoteSubmitBtn');
 
-newQuoteBtn.addEventListener('click', showRandomQuote);
+    if (!showAddQuoteFormBtn) {
+        showAddQuoteFormBtn = document.createElement('button');
+        showAddQuoteFormBtn.id = 'showAddQuoteFormBtn';
+        showAddQuoteFormBtn.textContent = 'Add New Quote';
+        showAddQuoteFormBtn.style.padding = '10px 20px';
+        showAddQuoteFormBtn.style.backgroundColor = '#28a745';
+        showAddQuoteFormBtn.style.color = 'white';
+        showAddQuoteFormBtn.style.border = 'none';
+        showAddQuoteFormBtn.style.borderRadius = '5px';
+        showAddQuoteFormBtn.style.cursor = 'pointer';
+        showAddQuoteFormBtn.style.marginLeft = '10px';
+        
+        if (newQuoteBtn) {
+            newQuoteBtn.parentNode.insertBefore(showAddQuoteFormBtn, newQuoteBtn.nextSibling);
+        } else {
+            document.body.appendChild(showAddQuoteFormBtn);
+        }
+    }
 
+    if (!addQuoteFormDiv) {
+        addQuoteFormDiv = document.createElement('div');
+        addQuoteFormDiv.id = 'addQuoteForm';
+        addQuoteFormDiv.style.marginTop = '20px';
+        addQuoteFormDiv.style.padding = '15px';
+        addQuoteFormDiv.style.border = '1px solid #ccc';
+        addQuoteFormDiv.style.borderRadius = '8px';
+        addQuoteFormDiv.style.display = 'none';
 
-if (showAddQuoteFormBtn) {
-    showAddQuoteFormBtn.addEventListener('click', toggleAddQuoteForm);
+        const formTitle = document.createElement('h2');
+        formTitle.textContent = 'Add Your Own Quote';
+        formTitle.style.marginBottom = '10px';
+        formTitle.style.fontSize = '20px';
+
+        newQuoteTextInput = document.createElement('input');
+        newQuoteTextInput.id = 'newQuoteText';
+        newQuoteTextInput.type = 'text';
+        newQuoteTextInput.placeholder = 'Enter a new quote';
+        newQuoteTextInput.style.display = 'block';
+        newQuoteTextInput.style.width = 'calc(100% - 20px)';
+        newQuoteTextInput.style.padding = '8px';
+        newQuoteTextInput.style.marginBottom = '10px';
+        newQuoteTextInput.style.borderRadius = '4px';
+        newQuoteTextInput.style.border = '1px solid #ddd';
+
+        newQuoteCategoryInput = document.createElement('input');
+        newQuoteCategoryInput.id = 'newQuoteCategory';
+        newQuoteCategoryInput.type = 'text';
+        newQuoteCategoryInput.placeholder = 'Enter quote category';
+        newQuoteCategoryInput.style.display = 'block';
+        newQuoteCategoryInput.style.width = 'calc(100% - 20px)';
+        newQuoteCategoryInput.style.padding = '8px';
+        newQuoteCategoryInput.style.marginBottom = '10px';
+        newQuoteCategoryInput.style.borderRadius = '4px';
+        newQuoteCategoryInput.style.border = '1px solid #ddd';
+
+        addQuoteSubmitBtn = document.createElement('button');
+        addQuoteSubmitBtn.id = 'addQuoteSubmitBtn';
+        addQuoteSubmitBtn.textContent = 'Add Quote';
+        addQuoteSubmitBtn.style.padding = '10px 15px';
+        addQuoteSubmitBtn.style.backgroundColor = '#007bff';
+        addQuoteSubmitBtn.style.color = 'white';
+        addQuoteSubmitBtn.style.border = 'none';
+        addQuoteSubmitBtn.style.borderRadius = '5px';
+        addQuoteSubmitBtn.style.cursor = 'pointer';
+
+        addQuoteFormDiv.appendChild(formTitle);
+        addQuoteFormDiv.appendChild(newQuoteTextInput);
+        addQuoteFormDiv.appendChild(newQuoteCategoryInput);
+        addQuoteFormDiv.appendChild(addQuoteSubmitBtn);
+
+        document.body.appendChild(addQuoteFormDiv);
+    }
+
+    if (showAddQuoteFormBtn) {
+        showAddQuoteFormBtn.addEventListener('click', toggleAddQuoteForm);
+    }
+    if (addQuoteSubmitBtn) {
+        addQuoteSubmitBtn.addEventListener('click', addQuote);
+    }
 }
 
+if (newQuoteBtn) {
+    newQuoteBtn.addEventListener('click', showRandomQuote);
+} else {
+    console.error("Error: 'newQuote' button not found in the HTML. The 'Show New Quote' functionality will not work.");
+}
 
-document.addEventListener('DOMContentLoaded', showRandomQuote);
+document.addEventListener('DOMContentLoaded', () => {
+    setupAddQuoteForm();
+    showRandomQuote();
+});
