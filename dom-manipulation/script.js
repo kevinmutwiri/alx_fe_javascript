@@ -51,7 +51,7 @@ function updateLastViewedQuoteDisplay(quote) {
     }
 }
 
-function populateCategoryFilter() {
+function populateCategories() {
     const categories = [...new Set(quotes.map(quote => quote.category.trim().toLowerCase()))];
     categoryFilterSelect.innerHTML = '<option value="all">All Categories</option>';
     categories.sort().forEach(category => {
@@ -62,8 +62,9 @@ function populateCategoryFilter() {
     });
 }
 
-function showRandomQuote() {
+function filterQuotes() {
     const selectedCategory = categoryFilterSelect.value;
+    localStorage.setItem('lastSelectedCategory', selectedCategory); // Save the selected category
     let filteredQuotes = quotes;
 
     if (selectedCategory !== 'all') {
@@ -94,8 +95,8 @@ function addQuote() {
         newQuoteTextInput.value = '';
         newQuoteCategoryInput.value = '';
         saveQuotes();
-        populateCategoryFilter();
-        showRandomQuote();
+        populateCategories(); // Update categories in filter
+        filterQuotes(); // Display a new random quote, potentially including the newly added one
     } else {
         alert('Please enter both quote text and category.');
     }
@@ -122,8 +123,8 @@ function importFromJsonFile(event) {
             if (Array.isArray(importedQuotes) && importedQuotes.every(q => q.text && q.category)) {
                 quotes.push(...importedQuotes);
                 saveQuotes();
-                populateCategoryFilter();
-                showRandomQuote();
+                populateCategories();
+                filterQuotes();
                 alert('Quotes imported successfully!');
             } else {
                 alert('Invalid JSON format. Please ensure it\'s an array of quote objects with "text" and "category" properties.');
@@ -143,12 +144,17 @@ function initializeQuoteGenerator() {
     loadQuotes();
     loadLastViewedQuote();
 
-    newQuoteButton.addEventListener('click', showRandomQuote);
-    categoryFilterSelect.addEventListener('change', showRandomQuote);
+    populateCategories(); // Populate categories on load
 
-    populateCategoryFilter();
-    showRandomQuote();
-    createAddQuoteForm();
+    const lastSelectedCategory = localStorage.getItem('lastSelectedCategory');
+    if (lastSelectedCategory) {
+        categoryFilterSelect.value = lastSelectedCategory;
+    }
+
+    filterQuotes(); // Display an initial random quote based on filter
+
+    newQuoteButton.addEventListener('click', filterQuotes); // Changed to filterQuotes
+    categoryFilterSelect.addEventListener('change', filterQuotes);
 }
 
 document.addEventListener('DOMContentLoaded', initializeQuoteGenerator);
