@@ -9,6 +9,14 @@ let quotes = [
     { text: "Get busy living or get busy dying.", category: "Life", author: "Stephen King" }
 ];
 
+let _serverData = [
+    { text: "Server's wisdom: Learn continuously.", category: "Wisdom", author: "Server" },
+    { text: "Server's advice: Embrace change.", category: "Motivation", author: "Server" }
+];
+
+const SYNC_INTERVAL_MS = 15000;
+const SERVER_LATENCY_MS = 1000;
+
 const quoteTextElement = document.getElementById('quoteText');
 const quoteCategoryElement = document.getElementById('quoteCategory');
 const newQuoteButton = document.getElementById('newQuote');
@@ -16,6 +24,17 @@ const newQuoteTextInput = document.getElementById('newQuoteText');
 const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
 const categoryFilterSelect = document.getElementById('categoryFilter');
 const lastViewedQuoteDisplay = document.getElementById('lastViewedQuoteDisplay');
+const syncStatusElement = document.getElementById('syncStatus');
+const notificationElement = document.getElementById('notification');
+const syncButton = document.getElementById('syncButton');
+
+function showNotification(message, type = 'success') {
+    notificationElement.textContent = message;
+    notificationElement.style.color = type === 'error' ? 'red' : 'green';
+    setTimeout(() => {
+        notificationElement.textContent = '';
+    }, 5000);
+}
 
 function saveQuotes() {
     localStorage.setItem('quotes', JSON.stringify(quotes));
@@ -67,7 +86,6 @@ function filterQuotes() {
     localStorage.setItem('lastSelectedCategory', selectedCategory);
     let filteredQuotes = quotes;
 
-    // Explicitly reference the quoteDisplay element here
     const quoteDisplayElement = document.getElementById('quoteDisplay');
 
     if (selectedCategory !== 'all') {
@@ -78,7 +96,6 @@ function filterQuotes() {
         quoteTextElement.textContent = "No quotes available for this category.";
         quoteCategoryElement.textContent = "";
         saveLastViewedQuote(null);
-        // You could optionally hide or style quoteDisplayElement here if needed
         return;
     }
 
@@ -90,17 +107,26 @@ function filterQuotes() {
     saveLastViewedQuote(randomQuote);
 }
 
-function addQuote() {
+async function addQuote() {
     const newText = newQuoteTextInput.value.trim();
     const newCategory = newQuoteCategoryInput.value.trim();
 
     if (newText && newCategory) {
-        quotes.push({ text: newText, category: newCategory, author: "User" });
+        const newQuote = { text: newText, category: newCategory, author: "User" };
+        quotes.push(newQuote);
         newQuoteTextInput.value = '';
         newQuoteCategoryInput.value = '';
         saveQuotes();
         populateCategories();
         filterQuotes();
+
+        try {
+            await _simulateServerPost(newQuote);
+            showNotification('Quote added and synced to server!');
+        } catch (error) {
+            console.error("Failed to post quote to server:", error);
+            showNotification('Quote added locally, but failed to sync to server.', 'error');
+        }
     } else {
         alert('Please enter both quote text and category.');
     }
@@ -144,6 +170,83 @@ function createAddQuoteForm() {
     console.log("Add Quote Form elements are ready.");
 }
 
+function _simulateServerFetch() {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(JSON.parse(JSON.stringify(_serverData)));
+        }, SERVER_LATENCY_MS);
+    });
+}
+
+function _simulateServerPost(newQuote) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            const existingIndex = _serverData.findIndex(q => q.text === newQuote.text && q.category === newQuote.category);
+            if (existingIndex === -1) {
+                _serverData.push(newQuote);
+            } else {
+                _serverData[existingIndex] = newQuote;
+            }
+            resolve(newQuote);
+        }, SERVER_LATENCY_MS);
+    });
+}
+
+async function syncQuotesWithServer() {
+    syncStatusElement.textContent = 'Syncing...';
+    try {
+        const serverQuotes = await _simulateServerFetch();
+        const localQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
+
+        let mergedQuotes = JSON.parse(JSON.stringify(serverQuotes));
+
+        let newLocalQuotesCount = 0;
+        let serverPrecedenceCount = 0;
+
+        localQuotes.forEach(localQuote => {
+            const serverHasQuote = serverQuotes.some(serverQ =>
+                serverQ.text === localQuote.text && serverQ.category === localQuote.category
+            );
+            if (!serverHasQuote) {
+                mergedQuotes.push(localQuote);
+                newLocalQuotesCount++;
+            } else {
+                const serverVersion = serverQuotes.find(serverQ =>
+                    serverQ.text === localQuote.text && serverQ.category === localQuote.category
+                );
+                if (JSON.stringify(localQuote) !== JSON.stringify(serverVersion)) {
+                    serverPrecedenceCount++;
+                }
+            }
+        });
+
+        quotes = mergedQuotes;
+        saveQuotes();
+        populateCategories();
+        filterQuotes();
+
+        const now = new Date();
+        syncStatusElement.textContent = `Last synced: ${now.toLocaleTimeString()}`;
+
+        let notificationMessage = 'Sync complete.';
+        if (newLocalQuotesCount > 0) {
+            notificationMessage += ` ${newLocalQuotesCount} local quote(s) pushed to server.`;
+        }
+        if (serverPrecedenceCount > 0) {
+            notificationMessage += ` ${serverPrecedenceCount} local change(s) overwritten by server.`;
+        }
+        if (newLocalQuotesCount === 0 && serverPrecedenceCount === 0 && serverQuotes.length !== localQuotes.length) {
+            notificationMessage += ` ${serverQuotes.length - localQuotes.length + newLocalQuotesCount} new quote(s) from server.`;
+        }
+        showNotification(notificationMessage);
+
+    } catch (error) {
+        console.error("Sync error:", error);
+        syncStatusElement.textContent = `Last synced: Failed (${new Date().toLocaleTimeString()})`;
+        showNotification('Sync failed. Check console for details.', 'error');
+    }
+}
+
 function initializeQuoteGenerator() {
     loadQuotes();
     loadLastViewedQuote();
@@ -159,6 +262,11 @@ function initializeQuoteGenerator() {
 
     newQuoteButton.addEventListener('click', filterQuotes);
     categoryFilterSelect.addEventListener('change', filterQuotes);
+    syncButton.addEventListener('click', syncQuotesWithServer);
+
+    syncQuotesWithServer();
+
+    setInterval(syncQuotesWithServer, SYNC_INTERVAL_MS);
 }
 
 document.addEventListener('DOMContentLoaded', initializeQuoteGenerator);

@@ -108,14 +108,16 @@
             background-color: #218838;
         }
 
-        .storage-section {
+        .storage-section,
+        .sync-section {
             margin-top: 30px;
             border-top: 1px solid #eee;
             padding-top: 20px;
         }
 
         .storage-section button,
-        .storage-section input[type="file"] {
+        .storage-section input[type="file"],
+        .sync-section button {
             margin-top: 10px;
         }
 
@@ -123,6 +125,11 @@
             font-size: 0.8em;
             color: #888;
             margin-top: 15px;
+        }
+
+        #notification {
+            margin-top: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -178,6 +185,14 @@
                 <label for="importFile" style="display: block; margin-top: 10px;">Import Quotes (JSON):</label>
                 <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
             </div>
+        </div>
+
+        <!-- Server Sync Section -->
+        <div class="sync-section">
+            <h2>Server Sync</h2>
+            <button id="syncButton">Sync Now</button>
+            <div id="syncStatus" style="margin-top: 10px; font-size: 0.9em; color: #555;">Last synced: Never</div>
+            <div id="notification"></div>
         </div>
     </div>
 
