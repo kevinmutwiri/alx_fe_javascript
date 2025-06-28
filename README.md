@@ -1,2 +1,1 @@
-# alx_fe_javascript
-ALX FE JavaScript
+# ALX FE JavaScript
