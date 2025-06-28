@@ -190,7 +190,6 @@ async function fetchQuotesFromServer() {
 
 async function _simulateServerPost(newQuote) {
     try {
-        // Simulate a POST request to JSONPlaceholder
         const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
             method: 'POST',
             headers: {
@@ -206,8 +205,6 @@ async function _simulateServerPost(newQuote) {
         const responseData = await response.json();
         console.log("Simulated server POST response:", responseData);
 
-        // Update our internal _serverData to simulate persistence on the server-side
-        // as JSONPlaceholder does not actually persist data.
         const existingIndex = _serverData.findIndex(q => q.text === newQuote.text && q.category === newQuote.category);
         if (existingIndex === -1) {
             _serverData.push(newQuote);
@@ -218,7 +215,7 @@ async function _simulateServerPost(newQuote) {
         return responseData;
     } catch (error) {
         console.error("Error simulating server POST:", error);
-        throw error; // Re-throw to be caught by addQuote's try-catch
+        throw error;
     }
 }
 
@@ -258,12 +255,12 @@ async function syncQuotesWithServer() {
         const now = new Date();
         syncStatusElement.textContent = `Last synced: ${now.toLocaleTimeString()}`;
 
-        let notificationMessage = 'Sync complete.';
+        let notificationMessage = 'Quotes synced with server!';
         if (newLocalQuotesCount > 0) {
-            notificationMessage += ` ${newLocalQuotesCount} local quote(s) pushed to server.`;
+            notificationMessage += ` ${newLocalQuotesCount} local quote(s) pushed.`;
         }
         if (serverPrecedenceCount > 0) {
-            notificationMessage += ` ${serverPrecedenceCount} local change(s) overwritten by server.`;
+            notificationMessage += ` ${serverPrecedenceCount} local change(s) overwritten.`;
         }
         if (newLocalQuotesCount === 0 && serverPrecedenceCount === 0 && serverQuotes.length !== localQuotes.length) {
             notificationMessage += ` ${serverQuotes.length - localQuotes.length + newLocalQuotesCount} new quote(s) from server.`;
