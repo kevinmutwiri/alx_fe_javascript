@@ -177,33 +177,49 @@ async function fetchQuotesFromServer() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        // Map JSONPlaceholder posts to our quote format
         return data.map(post => ({
             text: post.title,
-            category: `API - ${post.id % 5 === 0 ? 'Motivation' : 'Inspiration'}`, // Simple category assignment
+            category: `API - ${post.id % 5 === 0 ? 'Motivation' : 'Inspiration'}`,
             author: `API User ${post.userId}`
         }));
     } catch (error) {
         console.error("Error fetching from JSONPlaceholder:", error);
-        // Fallback to local _serverData if API fetch fails
         return JSON.parse(JSON.stringify(_serverData));
     }
 }
 
 async function _simulateServerPost(newQuote) {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            // Simulate posting to a server. JSONPlaceholder /posts will just return the data, not persist it.
-            // So, we update our internal _serverData to simulate our server having received it.
-            const existingIndex = _serverData.findIndex(q => q.text === newQuote.text && q.category === newQuote.category);
-            if (existingIndex === -1) {
-                _serverData.push(newQuote);
-            } else {
-                _serverData[existingIndex] = newQuote;
-            }
-            resolve(newQuote);
-        }, SERVER_LATENCY_MS);
-    });
+    try {
+        // Simulate a POST request to JSONPlaceholder
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newQuote),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const responseData = await response.json();
+        console.log("Simulated server POST response:", responseData);
+
+        // Update our internal _serverData to simulate persistence on the server-side
+        // as JSONPlaceholder does not actually persist data.
+        const existingIndex = _serverData.findIndex(q => q.text === newQuote.text && q.category === newQuote.category);
+        if (existingIndex === -1) {
+            _serverData.push(newQuote);
+        } else {
+            _serverData[existingIndex] = newQuote;
+        }
+
+        return responseData;
+    } catch (error) {
+        console.error("Error simulating server POST:", error);
+        throw error; // Re-throw to be caught by addQuote's try-catch
+    }
 }
 
 async function syncQuotesWithServer() {
