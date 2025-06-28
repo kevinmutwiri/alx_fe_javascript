@@ -63,10 +63,17 @@ function addQuote() {
     }
 }
 
-newQuoteButton.addEventListener('click', showRandomQuote);
-categoryFilterSelect.addEventListener('change', showRandomQuote);
+function createAddQuoteForm() {
+    console.log("Add Quote Form elements are ready.");
+}
 
-document.addEventListener('DOMContentLoaded', () => {
+function initializeQuoteGenerator() {
+    newQuoteButton.addEventListener('click', showRandomQuote);
+    categoryFilterSelect.addEventListener('change', showRandomQuote);
+
     populateCategoryFilter();
     showRandomQuote();
-});
+    createAddQuoteForm();
+}
+
+document.addEventListener('DOMContentLoaded', initializeQuoteGenerator);
