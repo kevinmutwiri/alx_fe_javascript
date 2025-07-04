@@ -1,3 +1,5 @@
+JavaScript
+
 let quotes = [
     { text: "The only way to do great work is to love what you do.", category: "Motivation", author: "Steve Jobs" },
     { text: "Believe you can and you're halfway there.", category: "Motivation", author: "Theodore Roosevelt" },
@@ -82,6 +84,7 @@ function populateCategories() {
 }
 
 function filterQuotes() {
+    const quoteDisplayElement = document.getElementById('quoteDisplay');
     const selectedCategory = categoryFilterSelect.value;
     localStorage.setItem('lastSelectedCategory', selectedCategory);
     let filteredQuotes = quotes;
