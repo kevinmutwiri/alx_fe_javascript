@@ -81,7 +81,7 @@ function populateCategories() {
     });
 }
 
-function filterQuotes() {
+function showRandomQuote() {
     const selectedCategory = categoryFilterSelect.value;
     localStorage.setItem('lastSelectedCategory', selectedCategory);
     let filteredQuotes = quotes;
@@ -118,7 +118,7 @@ async function addQuote() {
         newQuoteCategoryInput.value = '';
         saveQuotes();
         populateCategories();
-        filterQuotes();
+        showRandomQuote();
 
         try {
             await _simulateServerPost(newQuote);
@@ -154,7 +154,7 @@ function importFromJsonFile(event) {
                 quotes.push(...importedQuotes);
                 saveQuotes();
                 populateCategories();
-                filterQuotes();
+                showRandomQuote();
                 alert('Quotes imported successfully!');
             } else {
                 alert('Invalid JSON format. Please ensure it\'s an array of quote objects with "text" and "category" properties.');
@@ -250,7 +250,7 @@ async function syncQuotesWithServer() {
         quotes = mergedQuotes;
         saveQuotes();
         populateCategories();
-        filterQuotes();
+        showRandomQuote();
 
         const now = new Date();
         syncStatusElement.textContent = `Last synced: ${now.toLocaleTimeString()}`;
@@ -285,10 +285,10 @@ function initializeQuoteGenerator() {
         categoryFilterSelect.value = lastSelectedCategory;
     }
 
-    filterQuotes();
+    showRandomQuote();
 
-    newQuoteButton.addEventListener('click', filterQuotes);
-    categoryFilterSelect.addEventListener('change', filterQuotes);
+    newQuoteButton.addEventListener('click', showRandomQuote);
+    categoryFilterSelect.addEventListener('change', showRandomQuote);
     syncButton.addEventListener('click', syncQuotesWithServer);
 
     syncQuotesWithServer();
