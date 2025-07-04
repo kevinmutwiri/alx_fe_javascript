@@ -81,12 +81,10 @@ function populateCategories() {
     });
 }
 
-function showRandomQuote() {
+function filterQuotes() {
     const selectedCategory = categoryFilterSelect.value;
     localStorage.setItem('lastSelectedCategory', selectedCategory);
     let filteredQuotes = quotes;
-
-    const quoteDisplayElement = document.getElementById('quoteDisplay');
 
     if (selectedCategory !== 'all') {
         filteredQuotes = quotes.filter(quote => quote.category.trim().toLowerCase() === selectedCategory);
@@ -107,6 +105,10 @@ function showRandomQuote() {
     saveLastViewedQuote(randomQuote);
 }
 
+function showRandomQuote() {
+    filterQuotes();
+}
+
 async function addQuote() {
     const newText = newQuoteTextInput.value.trim();
     const newCategory = newQuoteCategoryInput.value.trim();
@@ -118,7 +120,7 @@ async function addQuote() {
         newQuoteCategoryInput.value = '';
         saveQuotes();
         populateCategories();
-        showRandomQuote();
+        filterQuotes();
 
         try {
             await _simulateServerPost(newQuote);
@@ -154,7 +156,7 @@ function importFromJsonFile(event) {
                 quotes.push(...importedQuotes);
                 saveQuotes();
                 populateCategories();
-                showRandomQuote();
+                filterQuotes();
                 alert('Quotes imported successfully!');
             } else {
                 alert('Invalid JSON format. Please ensure it\'s an array of quote objects with "text" and "category" properties.');
@@ -250,7 +252,7 @@ async function syncQuotesWithServer() {
         quotes = mergedQuotes;
         saveQuotes();
         populateCategories();
-        showRandomQuote();
+        filterQuotes();
 
         const now = new Date();
         syncStatusElement.textContent = `Last synced: ${now.toLocaleTimeString()}`;
@@ -285,10 +287,10 @@ function initializeQuoteGenerator() {
         categoryFilterSelect.value = lastSelectedCategory;
     }
 
-    showRandomQuote();
+    filterQuotes();
 
     newQuoteButton.addEventListener('click', showRandomQuote);
-    categoryFilterSelect.addEventListener('change', showRandomQuote);
+    categoryFilterSelect.addEventListener('change', filterQuotes);
     syncButton.addEventListener('click', syncQuotesWithServer);
 
     syncQuotesWithServer();
